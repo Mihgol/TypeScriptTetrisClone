@@ -1,7 +1,7 @@
 namespace Tetris {
     export const GAME_OPTIONS = {
         rows: 20,
-        columns: 20,
+        columns: 10,
     }
 
     export const DISPLAY_OPTIONS = {
