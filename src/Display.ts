@@ -21,6 +21,10 @@ namespace Tetris {
 
         }
 
+        public clear():void {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
         public drawBlock(x: number, y: number, color: COLORS):void {
 
             const { blockSize, gapSize } = DISPLAY_OPTIONS;
