@@ -10,6 +10,7 @@ namespace Tetris {
 
         private loop() {
 
+            this.display.clear();
             this.display.drawTetromino(this.activeTetromino);
 
             setTimeout(() => {
