@@ -14,5 +14,37 @@ namespace Tetris {
         private randomShapeIndex(): number {
             return Math.floor(Math.random() * SHAPES.length);
         }
+
+        public move(direction: DIR): void {
+            switch (direction) {
+                case DIR.LEFT:
+                    this.currentX -= 1;
+                    break;
+                case DIR.RIGHT:
+                    this.currentX += 1;
+                    break;
+                case DIR.DOWN:
+                    this.currentY += 1;
+                    break;
+            }
+        }
+
+        public calcRotation(change: number):number {
+            if (this.rotation + change < 0) return 3;
+            if (this.rotation + change > 3) return 0;
+            return this.rotation + change;
+        }
+
+
+        public rotate(direction: number): void {
+            switch (direction) {
+                case DIR.LEFT:
+                    this.rotation = this.calcRotation(-1);
+                    break;
+                case DIR.RIGHT:
+                    this.rotation = this.calcRotation(1);
+                    break;
+            }
+        }
     }
 }
