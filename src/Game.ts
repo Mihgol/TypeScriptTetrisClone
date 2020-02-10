@@ -18,6 +18,7 @@ namespace Tetris {
         private loop():void {
 
             this.display.clear();
+            this.display.drawBoard(this.board);
             this.display.drawTetromino(this.activeTetromino);
 
             setTimeout(() => {

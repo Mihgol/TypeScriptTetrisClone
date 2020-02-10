@@ -53,5 +53,14 @@ namespace Tetris {
                 }
             );
         }
+
+        public drawBoard(board: Board): void {
+            for (let block of board) {
+                const { x, y, color } = block as { x: number, y: number, color: COLORS };
+                if (color !== 0) {
+                    this.drawBlock(x, y, color);
+                }
+            }
+        }
     }
 }
