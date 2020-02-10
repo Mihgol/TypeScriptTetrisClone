@@ -29,6 +29,30 @@ namespace Tetris {
                 .map(x => Array.apply(null, Array(GAME_OPTIONS.columns))
                     .map(x => 0));
         }
+
+        public collision(x: number, y: number, shape: IShape, rotation: number): boolean {
+            return shape.data[rotation].some(
+                (block, blockIndex) => {
+                    if (block === 0) {
+                        return false;
+                    };
+
+                    const inBlockX = Math.floor(blockIndex / shape.size);
+                    const inBlockY = blockIndex % shape.size;
+
+                    const onBoardX = x + inBlockX;
+                    const onBoardY = y + inBlockY;
+
+                    if (onBoardX >= GAME_OPTIONS.columns || onBoardY >= GAME_OPTIONS.rows) {
+                        return true;
+                    }
+
+                    if (this.body[onBoardY][onBoardX] !== 0 && block !== 0) {
+                        return true;
+                    }
+                }
+            );
+        }
         
     }
 }
