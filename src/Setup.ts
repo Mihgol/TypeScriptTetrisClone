@@ -19,4 +19,10 @@ namespace Tetris {
         'mediumslateblue',
         'steelblue'
     }
+
+    export enum DIR {
+        "LEFT",
+        "RIGHT",
+        "DOWN",
+    }
 }
