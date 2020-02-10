@@ -6,7 +6,8 @@ namespace Tetris {
         public rotation: number;
         constructor() {
             this.shape = SHAPES[this.randomShapeIndex()];
-            this.currentX = GAME_OPTIONS.columns / 2 - this.shape.size / 2;
+            this.currentX = Math.floor(GAME_OPTIONS.columns / 2) 
+                - Math.floor(this.shape.size / 2);
             this.currentY = 0;
             this.rotation = 0;
         }
