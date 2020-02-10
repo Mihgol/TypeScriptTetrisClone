@@ -34,5 +34,20 @@ namespace Tetris {
             )
 
         }
+
+        public drawTetromino(tetromino: Tetromino) {
+            const { shape, rotation, currentX, currentY } = tetromino;
+
+            tetromino.shape.data[rotation].forEach(
+                (block, blockIndex) => {
+                    if (block === 0) {
+                        return;
+                    }
+                    const inBlockX = Math.floor(blockIndex / shape.size);
+                    const inBlockY = blockIndex % shape.size;
+                    this.drawBlock(inBlockX + currentX, inBlockY + currentY, block);
+                }
+            );
+        }
     }
 }
