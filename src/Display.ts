@@ -15,6 +15,49 @@ namespace Tetris {
             this.points.innerHTML = "Score: " + score.toString();
         }
 
+        public gameOver(score: number): void {
+            this.ctx.lineWidth = 2;
+            this.ctx.fillStyle = "#2D2D2D";
+            this.ctx.strokeStyle = "#FFFFFF";
+            this.ctx.font = "bold 40px Arial";
+
+            const textStroke = (text: string, x: number, y: number) => {
+                this.ctx.strokeText(text, x, y);
+                this.ctx.fillText(text, x, y);
+            }
+
+            textStroke(
+                "GAME OVER",
+                (this.canvas.width / 2)
+                - (this.ctx.measureText("GAME OVER").width / 2),
+                50
+            );
+
+            this.ctx.font = "bold 30px Arial";
+
+            textStroke(
+                "Your score:",
+                (this.canvas.width / 2)
+                - (this.ctx.measureText("Your score:").width / 2),
+                100
+            );
+
+            textStroke(
+                score.toString(),
+                (this.canvas.width / 2)
+                - (this.ctx.measureText(score.toString()).width / 2),
+                140
+            )
+
+            textStroke(
+                "Click to play again",
+                (this.canvas.width / 2)
+                - (this.ctx.measureText("Click to play again").width / 2),
+                this.canvas.height / 2
+            );
+
+        }
+
         private init(): void {
             const { blockSize, gapSize } = DISPLAY_OPTIONS;
             const { rows, columns } = GAME_OPTIONS;

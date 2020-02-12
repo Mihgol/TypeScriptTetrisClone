@@ -5,16 +5,30 @@ namespace Tetris {
         board: Board;
         speed: { current: number, total: number } = { current: 0, total: 40 };
         score: number = 0;
+        nextTetromino: Tetromino;
         constructor() {
             this.activeTetromino = new Tetromino();
-            this.display = new Display(document.body);
+            this.nextTetromino = new Tetromino();
             this.board = new Board();
+            this.display = new Display(document.body);
+            window.addEventListener('keydown', (e) => this.inputHandler(e));
             this.start();
         }
 
         private start(): void {
-            window.addEventListener('keydown', (e) => this.inputHandler(e));
+            this.activeTetromino = new Tetromino();
+            this.nextTetromino = new Tetromino();
+            this.board.init();
             this.loop();
+        }
+
+        private checkGameOver(): boolean {
+            return this.board.collision(
+                this.nextTetromino.currentX,
+                this.nextTetromino.currentY,
+                this.nextTetromino.shape,
+                this.nextTetromino.rotation
+            )
         }
 
         private loop(): void {
@@ -57,7 +71,26 @@ namespace Tetris {
                     });
                 };
 
-                this.activeTetromino = new Tetromino();
+                // Check if game over
+                if (this.checkGameOver()) {
+                    this.display.gameOver(this.score);
+
+                    this.display.canvas.addEventListener(
+                        'click',
+                        () => { this.start() },
+                        { once: true }
+                    );
+
+                    this.display.score(0);
+                    this.score = 0;
+
+                    return;
+
+                } else {
+                    this.activeTetromino = this.nextTetromino;
+                    this.nextTetromino = new Tetromino();
+                }
+
             }
 
             // Draw
