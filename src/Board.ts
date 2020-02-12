@@ -24,7 +24,7 @@ namespace Tetris {
             this.init();
         }
 
-        private init():void {
+        private init(): void {
             this.body = Array.apply(null, Array(GAME_OPTIONS.rows))
                 .map(x => Array.apply(null, Array(GAME_OPTIONS.columns))
                     .map(x => 0));
@@ -53,7 +53,7 @@ namespace Tetris {
                 }
             );
         }
-        
+
 
         public lockTetromino(tetromino: Tetromino): void {
             const { shape, rotation, currentX, currentY } = tetromino;
@@ -68,6 +68,17 @@ namespace Tetris {
                     };
                 }
             );
+        }
+
+        public getFullRows() {
+            return this.body.map(
+                (row, rowIndex) => row.every(block => block !== 0) ? rowIndex : null
+            ).filter(block => block !== null);
+        }
+
+        public removeRow(rowIndex: number): void {
+            this.body.splice(rowIndex, 1);
+            this.body.unshift(Array(GAME_OPTIONS.columns).fill(0));
         }
     }
 }

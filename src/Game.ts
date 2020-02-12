@@ -17,6 +17,19 @@ namespace Tetris {
 
         private loop(): void {
 
+            if (this.activeTetromino.locked) {
+                this.board.lockTetromino(this.activeTetromino);
+                const fullRows = this.board.getFullRows();
+
+                if (fullRows.length > 0) {
+                    fullRows.forEach(row => {
+                        if (row !== null) this.board.removeRow(row)
+                    });
+                };
+
+                this.activeTetromino = new Tetromino();
+            }
+
             this.display.clear();
             this.display.drawBoard(this.board);
             this.display.drawTetromino(this.activeTetromino);
@@ -37,8 +50,7 @@ namespace Tetris {
                     if (!this.board.collision(currentX, currentY + 1, shape, rotation)) {
                         this.activeTetromino.move(DIR.DOWN);
                     } else {
-                        this.board.lockTetromino(this.activeTetromino);
-                        this.activeTetromino = new Tetromino();
+                        this.activeTetromino.locked = true;
                     }
                     break;
                 case 'ArrowLeft':
