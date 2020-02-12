@@ -2,59 +2,74 @@ namespace Tetris {
     export class Display {
         canvas: HTMLCanvasElement;
         ctx: CanvasRenderingContext2D;
-        points: HTMLSpanElement;
+        panel: HTMLCanvasElement;
+        pCtx: CanvasRenderingContext2D
         constructor(private parent: HTMLElement) {
             this.parent = parent;
+            this.panel = document.createElement('canvas');
+            this.pCtx = this.panel.getContext('2d')!;
             this.canvas = document.createElement('canvas');
             this.ctx = this.canvas.getContext('2d')!;
-            this.points = document.createElement('span');
             this.init();
         }
 
-        public score(score: number): void {
-            this.points.innerHTML = "Score: " + score.toString();
-        }
-
         public gameOver(score: number): void {
+
             this.ctx.lineWidth = 2;
             this.ctx.fillStyle = "#2D2D2D";
             this.ctx.strokeStyle = "#FFFFFF";
-            this.ctx.font = "bold 40px Arial";
 
-            const textStroke = (text: string, x: number, y: number) => {
-                this.ctx.strokeText(text, x, y);
-                this.ctx.fillText(text, x, y);
+            const textStroke = (text: string, fontSize: number, y: number) => {
+                this.ctx.font = `bold ${fontSize}px Arial`;
+                const center = (this.canvas.width / 2) - (this.ctx.measureText(text).width / 2)
+                this.ctx.strokeText(text, center, y);
+                this.ctx.fillText(text, center, y);
             }
 
-            textStroke(
-                "GAME OVER",
-                (this.canvas.width / 2)
-                - (this.ctx.measureText("GAME OVER").width / 2),
-                50
-            );
+            const displayText: [string, number, number][] = [
+                ["GAME OVER", 40, 50],
+                ["Your score: ", 20, 100],
+                [score.toString(), 20, 140],
+                ["Click to play again", 20, this.canvas.height / 2],
+            ]
 
-            this.ctx.font = "bold 30px Arial";
+            displayText.forEach(line => {
+                textStroke(...line);
+            })
 
-            textStroke(
-                "Your score:",
-                (this.canvas.width / 2)
-                - (this.ctx.measureText("Your score:").width / 2),
-                100
-            );
+        }
 
-            textStroke(
+        public drawPanel(score: number, nextTetromino: Tetromino): void {
+
+            this.pCtx.clearRect(0, 0, this.panel.width, this.panel.height);
+
+            this.pCtx.font = "30px Arial";
+            this.pCtx.fillStyle = "#B4B4B4";
+            this.pCtx.fillText("Score:", 20, 40);
+            this.pCtx.fillText(
                 score.toString(),
-                (this.canvas.width / 2)
-                - (this.ctx.measureText(score.toString()).width / 2),
-                140
-            )
+                this.panel.width / 2 - (this.pCtx.measureText(score.toString()).width / 2)
+                , 95);
+            this.pCtx.fillText("Next:", 20, 160);
+            this.pCtx.fillText("Controls:", 20, 380);
+            this.pCtx.font = "20px Arial";
 
-            textStroke(
-                "Click to play again",
-                (this.canvas.width / 2)
-                - (this.ctx.measureText("Click to play again").width / 2),
-                this.canvas.height / 2
-            );
+            const controls = 435;
+
+            this.pCtx.fillText("Move", 40, controls);
+            this.pCtx.fillText(": arrows", 160, controls);
+
+            this.pCtx.fillText("Rotate right", 40, controls + 35);
+            this.pCtx.fillText(": x", 160, controls + 35);
+
+            this.pCtx.fillText("Rotate left", 40, controls + 70);
+            this.pCtx.fillText(": z", 160, controls + 70);
+
+            this.pCtx.fillText("Drop", 40, controls + 105);
+            this.pCtx.fillText(": space", 160, controls + 105);
+
+            this.drawTetromino(nextTetromino, this.pCtx, nextTetromino.currentX, 7);
+
 
         }
 
@@ -62,11 +77,15 @@ namespace Tetris {
             const { blockSize, gapSize } = DISPLAY_OPTIONS;
             const { rows, columns } = GAME_OPTIONS;
 
-            this.parent.appendChild(this.points);
+
             this.parent.appendChild(this.canvas);
+            this.parent.appendChild(this.panel);
 
             this.canvas.width = gapSize + (blockSize + gapSize) * columns;
             this.canvas.height = gapSize + (blockSize + gapSize) * rows;
+
+            this.panel.width = this.canvas.width;
+            this.panel.height = this.canvas.height;
 
         }
 
@@ -74,12 +93,12 @@ namespace Tetris {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
-        public drawBlock(x: number, y: number, color: COLORS): void {
+        public drawBlock(ctx: CanvasRenderingContext2D, x: number, y: number, color: COLORS): void {
 
             const { blockSize, gapSize } = DISPLAY_OPTIONS;
 
-            this.ctx.fillStyle = COLORS[color];
-            this.ctx.fillRect(
+            ctx.fillStyle = COLORS[color];
+            ctx.fillRect(
                 gapSize + (blockSize + gapSize) * x,
                 gapSize + (blockSize + gapSize) * y,
                 blockSize,
@@ -88,8 +107,18 @@ namespace Tetris {
 
         }
 
-        public drawTetromino(tetromino: Tetromino) {
-            const { shape, rotation, currentX, currentY } = tetromino;
+        public drawTetromino(
+            tetromino: Tetromino,
+            ctx: CanvasRenderingContext2D = this.ctx,
+            xOffset: number = 0,
+            yOffset: number = 0
+        ) {
+            let { shape, rotation, currentX, currentY } = tetromino;
+
+            if (ctx !== this.ctx) {
+                currentX = 0;
+                currentY = 0;
+            }
 
             tetromino.shape.data[rotation].forEach(
                 (block, blockIndex) => {
@@ -98,7 +127,7 @@ namespace Tetris {
                     }
                     const inBlockX = Math.floor(blockIndex / shape.size);
                     const inBlockY = blockIndex % shape.size;
-                    this.drawBlock(inBlockX + currentX, inBlockY + currentY, block);
+                    this.drawBlock(ctx, inBlockX + currentX + xOffset, inBlockY + yOffset + currentY, block);
                 }
             );
         }
@@ -107,7 +136,7 @@ namespace Tetris {
             for (let block of board) {
                 const { x, y, color } = block as { x: number, y: number, color: COLORS };
                 if (color !== 0) {
-                    this.drawBlock(x, y, color);
+                    this.drawBlock(this.ctx, x, y, color);
                 }
             }
         }
