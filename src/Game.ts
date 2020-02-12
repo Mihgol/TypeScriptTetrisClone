@@ -3,6 +3,7 @@ namespace Tetris {
         activeTetromino: Tetromino;
         display: Display;
         board: Board;
+        speed: { current: number, total: number } = { current: 0, total: 20 }
         constructor() {
             this.activeTetromino = new Tetromino();
             this.display = new Display(document.body);
@@ -16,6 +17,19 @@ namespace Tetris {
         }
 
         private loop(): void {
+
+            if (this.speed.current === this.speed.total) {
+                if (!this.board.collision(
+                    this.activeTetromino.currentX,
+                    this.activeTetromino.currentY + 1,
+                    this.activeTetromino.shape,
+                    this.activeTetromino.rotation)) {
+                    this.activeTetromino.move(DIR.DOWN);
+                } else {
+                    this.activeTetromino.locked = true;
+                }
+                this.speed.current = 0;
+            }
 
             if (this.activeTetromino.locked) {
                 this.board.lockTetromino(this.activeTetromino);
@@ -36,6 +50,7 @@ namespace Tetris {
 
             setTimeout(() => {
                 requestAnimationFrame(() => {
+                    this.speed.current += 1;
                     this.loop();
                 })
             }, 50);
