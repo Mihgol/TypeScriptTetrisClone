@@ -24,7 +24,7 @@ namespace Tetris {
             this.init();
         }
 
-        private init(): void {
+        public init(): void {
             this.body = Array.apply(null, Array(GAME_OPTIONS.rows))
                 .map(x => Array.apply(null, Array(GAME_OPTIONS.columns))
                     .map(x => 0));
