@@ -10,19 +10,19 @@ namespace Tetris {
             this.start();
         }
 
-        private start():void {
+        private start(): void {
             window.addEventListener('keydown', (e) => this.inputHandler(e));
             this.loop();
         }
 
-        private loop():void {
+        private loop(): void {
 
             this.display.clear();
             this.display.drawBoard(this.board);
             this.display.drawTetromino(this.activeTetromino);
 
             setTimeout(() => {
-                requestAnimationFrame(()=>{
+                requestAnimationFrame(() => {
                     this.loop();
                 })
             }, 50);
@@ -36,7 +36,10 @@ namespace Tetris {
                     e.preventDefault();
                     if (!this.board.collision(currentX, currentY + 1, shape, rotation)) {
                         this.activeTetromino.move(DIR.DOWN);
-                    } 
+                    } else {
+                        this.board.lockTetromino(this.activeTetromino);
+                        this.activeTetromino = new Tetromino();
+                    }
                     break;
                 case 'ArrowLeft':
                     e.preventDefault();
@@ -58,7 +61,7 @@ namespace Tetris {
                     break;
                 case 'z':
                     e.preventDefault();
-                    if(!this.board.collision(currentX, currentY, shape, this.activeTetromino.calcRotation(-1))) {
+                    if (!this.board.collision(currentX, currentY, shape, this.activeTetromino.calcRotation(-1))) {
                         this.activeTetromino.rotate(DIR.LEFT);
                     }
             }
