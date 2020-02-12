@@ -3,7 +3,8 @@ namespace Tetris {
         activeTetromino: Tetromino;
         display: Display;
         board: Board;
-        speed: { current: number, total: number } = { current: 0, total: 20 }
+        speed: { current: number, total: number } = { current: 0, total: 40 };
+        score: number = 0;
         constructor() {
             this.activeTetromino = new Tetromino();
             this.display = new Display(document.body);
@@ -18,6 +19,7 @@ namespace Tetris {
 
         private loop(): void {
 
+            // Force down
             if (this.speed.current === this.speed.total) {
                 if (!this.board.collision(
                     this.activeTetromino.currentX,
@@ -31,9 +33,23 @@ namespace Tetris {
                 this.speed.current = 0;
             }
 
+            // Lock Tetromino
             if (this.activeTetromino.locked) {
+
+                this.score += 1;
+
                 this.board.lockTetromino(this.activeTetromino);
                 const fullRows = this.board.getFullRows();
+
+                if (fullRows.length === 4) {
+                    this.score += 800;
+                } else if (fullRows.length === 3) {
+                    this.score += 400;
+                } else if (fullRows.length === 2) {
+                    this.score += 100;
+                } else if (fullRows.length === 1) {
+                    this.score += 25;
+                }
 
                 if (fullRows.length > 0) {
                     fullRows.forEach(row => {
@@ -44,6 +60,8 @@ namespace Tetris {
                 this.activeTetromino = new Tetromino();
             }
 
+            // Draw
+            this.display.score(this.score);
             this.display.clear();
             this.display.drawBoard(this.board);
             this.display.drawTetromino(this.activeTetromino);
@@ -53,7 +71,7 @@ namespace Tetris {
                     this.speed.current += 1;
                     this.loop();
                 })
-            }, 50);
+            }, 25);
         }
 
         private inputHandler(e: any): void {

@@ -2,18 +2,24 @@ namespace Tetris {
     export class Display {
         canvas: HTMLCanvasElement;
         ctx: CanvasRenderingContext2D;
-
+        points: HTMLSpanElement;
         constructor(private parent: HTMLElement) {
             this.parent = parent;
             this.canvas = document.createElement('canvas');
             this.ctx = this.canvas.getContext('2d')!;
+            this.points = document.createElement('span');
             this.init();
         }
 
-        private init():void {
+        public score(score: number): void {
+            this.points.innerHTML = "Score: " + score.toString();
+        }
+
+        private init(): void {
             const { blockSize, gapSize } = DISPLAY_OPTIONS;
             const { rows, columns } = GAME_OPTIONS;
 
+            this.parent.appendChild(this.points);
             this.parent.appendChild(this.canvas);
 
             this.canvas.width = gapSize + (blockSize + gapSize) * columns;
@@ -21,17 +27,17 @@ namespace Tetris {
 
         }
 
-        public clear():void {
+        public clear(): void {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
-        public drawBlock(x: number, y: number, color: COLORS):void {
+        public drawBlock(x: number, y: number, color: COLORS): void {
 
             const { blockSize, gapSize } = DISPLAY_OPTIONS;
 
             this.ctx.fillStyle = COLORS[color];
             this.ctx.fillRect(
-                gapSize + (blockSize + gapSize) * x, 
+                gapSize + (blockSize + gapSize) * x,
                 gapSize + (blockSize + gapSize) * y,
                 blockSize,
                 blockSize
