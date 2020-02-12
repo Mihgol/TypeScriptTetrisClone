@@ -19,10 +19,11 @@ namespace Tetris {
             this.activeTetromino = new Tetromino();
             this.nextTetromino = new Tetromino();
             this.board.init();
+            this.display.drawPanel(this.score, this.nextTetromino);
             this.loop();
         }
 
-        private checkGameOver(): boolean {
+        private isGameOver(): boolean {
             return this.board.collision(
                 this.nextTetromino.currentX,
                 this.nextTetromino.currentY,
@@ -72,7 +73,7 @@ namespace Tetris {
                 };
 
                 // Check if game over
-                if (this.checkGameOver()) {
+                if (this.isGameOver()) {
                     this.display.gameOver(this.score);
 
                     this.display.canvas.addEventListener(
@@ -81,7 +82,7 @@ namespace Tetris {
                         { once: true }
                     );
 
-                    this.display.score(0);
+                    this.display.drawPanel(0, this.nextTetromino);
                     this.score = 0;
 
                     return;
@@ -89,12 +90,13 @@ namespace Tetris {
                 } else {
                     this.activeTetromino = this.nextTetromino;
                     this.nextTetromino = new Tetromino();
+                    this.display.drawPanel(this.score, this.nextTetromino);
                 }
 
             }
 
             // Draw
-            this.display.score(this.score);
+            // this.display.drawScore(this.score);
             this.display.clear();
             this.display.drawBoard(this.board);
             this.display.drawTetromino(this.activeTetromino);
