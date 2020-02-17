@@ -361,7 +361,6 @@ var Tetris;
             this.display.drawBoard(this.board);
             this.display.drawTetromino(this.activeTetromino, this.display.gameCanvasCtx, 0, this.board.calcGhostPosition(this.activeTetromino), true);
             this.display.drawTetromino(this.activeTetromino);
-            console.log(this.board.calcGhostPosition(this.activeTetromino));
             setTimeout(function () {
                 requestAnimationFrame(function () {
                     _this.loop();
