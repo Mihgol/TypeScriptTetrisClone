@@ -127,7 +127,6 @@ namespace Tetris {
                 true
             )
             this.display.drawTetromino(this.activeTetromino);
-            console.log(this.board.calcGhostPosition(this.activeTetromino))
             setTimeout(() => {
                 requestAnimationFrame(() => {
                     this.loop();
