@@ -1,5 +1,7 @@
 # TypeScriptTetrisClone
-Simple Tetris game for TypeScript practice and giggles.
+Simple Tetris game for TypeScript practice and giggles.  
+
+[Live Demo](https://mihgol.github.io/TypeScriptTetrisClone/)
 
 To build type:
 ```
