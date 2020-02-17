@@ -1,150 +1,200 @@
 namespace Tetris {
+    export interface Input {
+        [key: string]: () => void;
+    }
+
     export class Game {
-        activeTetromino: Tetromino;
+        activeTetromino!: Tetromino;
+        nextTetromino!: Tetromino;
+        heldTetromino: Tetromino | null = null;
         display: Display;
         board: Board;
-        speed: { current: number, total: number } = { current: 0, total: 40 };
+        speed: { current: number, total: number };
         score: number = 0;
-        nextTetromino: Tetromino;
-        constructor() {
-            this.activeTetromino = new Tetromino();
-            this.nextTetromino = new Tetromino();
+        swapAwailable: boolean = true;
+        paused: boolean = false;
+        constructor(private parentElement: HTMLElement) {
+            this.parentElement = parentElement;
             this.board = new Board();
-            this.display = new Display(document.body);
-            window.addEventListener('keydown', (e) => this.inputHandler(e));
+            this.display = new Display(this.parentElement);
+            this.speed = { current: 0, total: 40 };
+            this.addInput();
             this.start();
         }
 
-        private start(): void {
-            this.activeTetromino = new Tetromino();
-            this.nextTetromino = new Tetromino();
-            this.board.init();
-            this.display.drawPanel(this.score, this.nextTetromino);
-            this.loop();
-        }
-
-        private isGameOver(): boolean {
-            return this.board.collision(
-                this.nextTetromino.currentX,
-                this.nextTetromino.currentY,
-                this.nextTetromino.shape,
-                this.nextTetromino.rotation
-            )
-        }
-
-        private loop(): void {
-
-            // Force down
+        private speedCounter(): void {
             if (this.speed.current === this.speed.total) {
-                if (!this.board.collision(
-                    this.activeTetromino.currentX,
-                    this.activeTetromino.currentY + 1,
-                    this.activeTetromino.shape,
-                    this.activeTetromino.rotation)) {
+                if (this.board.permittedMove(this.activeTetromino, DIR.DOWN)) {
                     this.activeTetromino.move(DIR.DOWN);
                 } else {
                     this.activeTetromino.locked = true;
                 }
                 this.speed.current = 0;
             }
+            this.speed.current += 1;
+        }
+
+        private start(): void {
+            this.activeTetromino = new Tetromino();
+            this.nextTetromino = new Tetromino();
+            this.board.init();
+            this.display.drawSidePanel(this.score, this.nextTetromino);
+            this.loop();
+        }
+
+        private holdTetromino(): void {
+            if (this.swapAwailable && this.heldTetromino === null) {
+                this.heldTetromino = this.activeTetromino;
+                this.heldTetromino.resetPosition();
+                this.activeTetromino = new Tetromino();
+            } else if (this.swapAwailable && this.heldTetromino !== null) {
+                [this.activeTetromino, this.heldTetromino] = [this.heldTetromino, this.activeTetromino];
+                this.heldTetromino.resetPosition();
+            }
+            this.swapAwailable = false;
+        }
+
+        private gameOver(): boolean {
+            return !this.board.permittedMove(
+                this.nextTetromino, DIR.IDLE
+            )
+        }
+
+        private loop(): void {
+
+            this.speedCounter();
 
             // Lock Tetromino
             if (this.activeTetromino.locked) {
 
-                this.score += 1;
-
                 this.board.lockTetromino(this.activeTetromino);
+
                 const fullRows = this.board.getFullRows();
 
-                if (fullRows.length === 4) {
-                    this.score += 800;
-                } else if (fullRows.length === 3) {
-                    this.score += 400;
-                } else if (fullRows.length === 2) {
-                    this.score += 100;
-                } else if (fullRows.length === 1) {
-                    this.score += 25;
+                const processScore = (numberOfFullRows: number) => {
+                    const actions = [
+                        () => this.score += 1,
+                        () => this.score += 25,
+                        () => this.score += 100,
+                        () => this.score += 400,
+                        () => this.score += 800,
+                    ]
+                    actions[numberOfFullRows]();
                 }
 
-                if (fullRows.length > 0) {
-                    fullRows.forEach(row => {
-                        if (row !== null) this.board.removeRow(row)
-                    });
-                };
+                processScore(fullRows.length);
+
+                fullRows.forEach(row => {
+                    if (row !== null) this.board.removeRow(row)
+                });
 
                 // Check if game over
-                if (this.isGameOver()) {
-                    this.display.gameOver(this.score);
-
-                    this.display.canvas.addEventListener(
+                if (this.gameOver() && !this.paused) {
+                    this.display.drawGameOver(this.score);
+                    this.display.gameCanvas.addEventListener(
                         'click',
                         () => { this.start() },
                         { once: true }
                     );
 
-                    this.display.drawPanel(0, this.nextTetromino);
+                    this.display.drawSidePanel(0, this.nextTetromino, this.heldTetromino);
                     this.score = 0;
 
                     return;
 
                 } else {
+                    this.swapAwailable = true;
                     this.activeTetromino = this.nextTetromino;
                     this.nextTetromino = new Tetromino();
-                    this.display.drawPanel(this.score, this.nextTetromino);
+                    this.display.drawSidePanel(this.score, this.nextTetromino, this.heldTetromino);
                 }
 
             }
 
-            // Draw
-            // this.display.drawScore(this.score);
-            this.display.clear();
-            this.display.drawBoard(this.board);
-            this.display.drawTetromino(this.activeTetromino);
+            if (this.paused) {
+                this.display.drawPaused();
+                return;
+            }
 
+            // Draw
+            this.display.clearGameCanvas();
+            this.display.drawBoard(this.board);
+            this.display.drawTetromino(
+                this.activeTetromino,
+                this.display.gameCanvasCtx,
+                0,
+                this.board.calcGhostPosition(this.activeTetromino),
+                true
+            )
+            this.display.drawTetromino(this.activeTetromino);
+            console.log(this.board.calcGhostPosition(this.activeTetromino))
             setTimeout(() => {
                 requestAnimationFrame(() => {
-                    this.speed.current += 1;
                     this.loop();
                 })
             }, 25);
         }
 
-        private inputHandler(e: any): void {
+        private addInput(): void {
+            window.addEventListener('keydown',
+                (event) => this.inputHandler(event));
+        }
 
-            const { currentX, currentY, rotation, shape } = this.activeTetromino;
-            switch (e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    if (!this.board.collision(currentX, currentY + 1, shape, rotation)) {
+        private inputHandler(event: KeyboardEvent): void {
+            const pressedKey = event.key.toLowerCase();
+
+            const mappedKeys: Input = {
+                'arrowdown': () => {
+                    this.board.permittedMove(this.activeTetromino, DIR.DOWN)
+                        ? this.activeTetromino.move(DIR.DOWN)
+                        : this.activeTetromino.locked = true;
+                },
+                'arrowleft': () => {
+                    this.board.permittedMove(this.activeTetromino, DIR.LEFT)
+                        ? this.activeTetromino.move(DIR.LEFT)
+                        : null;
+                },
+                'arrowright': () => {
+                    this.board.permittedMove(this.activeTetromino, DIR.RIGHT)
+                        ? this.activeTetromino.move(DIR.RIGHT)
+                        : null;
+                },
+                'arrowup': () => {
+                    this.board.permittedRotation(this.activeTetromino, DIR.RIGHT)
+                        ? this.activeTetromino.rotate(DIR.RIGHT)
+                        : null;
+                },
+                'x': () => {
+                    this.board.permittedRotation(this.activeTetromino, DIR.RIGHT)
+                        ? this.activeTetromino.rotate(DIR.RIGHT)
+                        : null;
+                },
+                'z': () => {
+                    this.board.permittedRotation(this.activeTetromino, DIR.LEFT)
+                        ? this.activeTetromino.rotate(DIR.LEFT)
+                        : null;
+                },
+                'c': () => {
+                    this.holdTetromino();
+                    this.display.drawSidePanel(this.score, this.nextTetromino, this.heldTetromino);
+                },
+                ' ': () => {
+                    while (this.board.permittedMove(this.activeTetromino, DIR.DOWN))
                         this.activeTetromino.move(DIR.DOWN);
-                    } else {
-                        this.activeTetromino.locked = true;
-                    }
-                    break;
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    if (!this.board.collision(currentX - 1, currentY, shape, rotation)) {
-                        this.activeTetromino.move(DIR.LEFT);
-                    }
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    if (!this.board.collision(currentX + 1, currentY, shape, rotation)) {
-                        this.activeTetromino.move(DIR.RIGHT);
-                    }
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    if (!this.board.collision(currentX, currentY, shape, this.activeTetromino.calcRotation(1))) {
-                        this.activeTetromino.rotate(DIR.RIGHT);
-                    }
-                    break;
-                case 'z':
-                    e.preventDefault();
-                    if (!this.board.collision(currentX, currentY, shape, this.activeTetromino.calcRotation(-1))) {
-                        this.activeTetromino.rotate(DIR.LEFT);
-                    }
+                    this.activeTetromino.locked = true;
+                },
+                'pause': () => {
+                    this.display.clearGameCanvas();
+                    this.paused = !this.paused;
+                    this.loop();
+                }
             }
+
+            if (pressedKey in mappedKeys) {
+                event.preventDefault();
+                mappedKeys[pressedKey]();
+            };
+
         }
     }
 }

@@ -7,8 +7,19 @@ namespace Tetris {
         public locked: boolean = false;
         constructor() {
             this.shape = SHAPES[this.randomShapeIndex()];
-            this.currentX = Math.floor(GAME_OPTIONS.columns / 2)
-                - Math.floor(this.shape.size / 2);
+            this.currentX = Math.floor(
+                GAME_OPTIONS.columns / 2)
+                - Math.floor(this.shape.size / 2
+                );
+            this.currentY = 0;
+            this.rotation = 0;
+        }
+
+        public resetPosition(): void {
+            this.currentX = Math.floor(
+                GAME_OPTIONS.columns / 2)
+                - Math.floor(this.shape.size / 2
+                );
             this.currentY = 0;
             this.rotation = 0;
         }
@@ -36,7 +47,6 @@ namespace Tetris {
             if (this.rotation + change > 3) return 0;
             return this.rotation + change;
         }
-
 
         public rotate(direction: number): void {
             switch (direction) {
