@@ -10,7 +10,7 @@ namespace Tetris {
     }
 
     export enum COLORS {
-        'black',
+        '#B4B4B4',
         'crimson',
         'darkcyan',
         'darkslategrey',
@@ -24,5 +24,6 @@ namespace Tetris {
         "LEFT",
         "RIGHT",
         "DOWN",
+        "IDLE"
     }
 }

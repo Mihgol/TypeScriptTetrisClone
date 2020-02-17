@@ -30,7 +30,7 @@ namespace Tetris {
                     .map(x => 0));
         }
 
-        public collision(x: number, y: number, shape: IShape, rotation: number): boolean {
+        private collision(x: number, y: number, shape: IShape, rotation: number): boolean {
             return shape.data[rotation].some(
                 (block, blockIndex) => {
                     if (block === 0) {
@@ -54,6 +54,66 @@ namespace Tetris {
             );
         }
 
+        public calcGhostPosition(tetromino: Tetromino, y: number = tetromino.currentY): number {
+            if (this.collision(tetromino.currentX, y + 1, tetromino.shape, tetromino.rotation)) {
+                return y - tetromino.currentY;
+            } else {
+                return this.calcGhostPosition(tetromino, ++y);
+            }
+        }
+
+        public permittedMove(tetromino: Tetromino, direction: DIR): boolean {
+            switch (direction) {
+                case DIR.LEFT:
+                    return !this.collision(
+                        tetromino.currentX - 1,
+                        tetromino.currentY,
+                        tetromino.shape,
+                        tetromino.rotation
+                    );
+                case DIR.RIGHT:
+                    return !this.collision(
+                        tetromino.currentX + 1,
+                        tetromino.currentY,
+                        tetromino.shape,
+                        tetromino.rotation
+                    );
+                case DIR.DOWN:
+                    return !this.collision(
+                        tetromino.currentX,
+                        tetromino.currentY + 1,
+                        tetromino.shape,
+                        tetromino.rotation
+                    );
+                case DIR.IDLE:
+                    return !this.collision(
+                        tetromino.currentX,
+                        tetromino.currentY,
+                        tetromino.shape,
+                        tetromino.rotation
+                    );
+            }
+        }
+
+        public permittedRotation(tetromino: Tetromino, direction: DIR): boolean {
+            switch (direction) {
+                case DIR.LEFT:
+                    return !this.collision(
+                        tetromino.currentX,
+                        tetromino.currentY,
+                        tetromino.shape,
+                        tetromino.calcRotation(+1)
+                    );
+                case DIR.RIGHT:
+                    return !this.collision(
+                        tetromino.currentX,
+                        tetromino.currentY,
+                        tetromino.shape,
+                        tetromino.calcRotation(1)
+                    );
+            }
+            return false;
+        }
 
         public lockTetromino(tetromino: Tetromino): void {
             const { shape, rotation, currentX, currentY } = tetromino;
