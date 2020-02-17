@@ -3,13 +3,14 @@ Simple Tetris game for TypeScript practice and giggles.
 
 [Live Demo](https://mihgol.github.io/TypeScriptTetrisClone/)
 
-To build type:
+Requires TypeScript installed, in order to build type:
 ```
 tsc
 ```
 
-Add tetris.js to your HTML file and create new instance of Tetris.Game,
-which takes DOM Element as parameter, eg. document.body to place it inside body.
+Add tetris.js to your HTML file and create new instance of Tetris.Game,  
+with DOM Element as an argument, eg. document.body - to place game  
+canvas inside that element.  
 
 ```
 <script src="tetris.js"></script>
